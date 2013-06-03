@@ -1,0 +1,310 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <meta name='viewport' content='width=device-width'>
+        <meta http-equiv='X-UA-Compatible' content='chrome=1'>
+
+        <link rel='stylesheet' type='text/css' href='http://fonts.googleapis.com/css?family=Numans'>
+        <style>
+            body {
+                background-color:#f4f4f4;
+                color:#555;
+                max-width:800px;
+                font-size:16px;
+                font-weight:200;
+                font-family:Helvetica Neue,arial,verdana;
+                margin:0 auto;
+                padding:20px;
+            }
+
+            h1 {
+                color:#708090;
+                text-shadow:0 1px 2px #fff;
+                font-size:4em;
+                text-align:center;
+            }
+
+            .subtitle {
+                text-align:center;
+                margin-bottom:60px;
+            }
+
+            h2 {
+                text-shadow:0 1px 2px #fff;
+            }
+
+            h2 span {
+                font-weight:200;
+                font-size:14px;
+            }
+
+            a {
+                color:#a80000;
+            }
+
+            .smaller {
+                font-size:.8em;
+            }
+
+            h4 {
+                font-weight:400;
+                font-size:20px;
+                margin:4px 0;
+            }
+
+            textarea {
+                border:1px solid #D3D3D3;
+                outline:none;
+                font-size:14px;
+                width:96%;
+                height:210px;
+                text-align:left;
+                padding:10px;
+            }
+
+            .templategroup,.datagroup,.functiongroup,.resultgroup {
+                width:48%;
+                float:left;
+                min-width:300px;
+                margin:4px 2% 4px 0;
+            }
+
+            .function,.result {
+                background:#DDD;
+                height:212px;
+                font-size:14px;
+                overflow-y:auto;
+                padding:10px;
+            }
+
+            .definegroup {
+                display:none;
+            }
+
+            .templategroup.withdefs .definegroup {
+                display:block;
+            }
+
+            .templategroup.withdefs .template {
+                height:90px;
+            }
+
+            textarea.defines {
+                height:60px;
+            }
+
+            .stripgroup {
+                padding-top:8px;
+                width:160px;
+                float:left;
+            }
+
+            code {
+                font-size:14px;
+                font-weight:700;
+            }
+
+            #sampletabs {
+                list-style:none;
+                margin:0;
+                padding:0;
+            }
+
+            #sampletabs li {
+                float:left;
+                background:#DDD;
+                cursor:pointer;
+                margin:4px;
+                padding:4px 8px;
+            }
+
+            #sampletabs li.active {
+                background:#fa8072;
+                color:#FFF;
+            }
+
+            @media all and max-width740px{
+                .templategroup,.datagroup,.functiongroup,.resultgroup {
+                    width:100%;
+                    margin-right:0;
+                }
+
+                pre {
+                    overflow-x:scroll;
+                }
+            }
+        </style>
+        <title>jquery.template.js | The fastest + concise jQuery template engine</title>
+    </head>
+
+    <body>
+        <div id="samples">
+            <ul id="sampletabs"></ul>
+            <div class="stripgroup">
+                <input id="strip" type="checkbox" checked="checked"/>
+                <label for="strip">Strip whitespaces</label>
+            </div>
+            <div style="clear:both;height:10px"></div>
+            <div class="templategroup">
+                <h4>Template</h4>
+                <textarea autocomplete="off" class="template"></textarea>
+                <div class="definegroup">
+                    <h4>Compile-time defines (def)</h4>
+                    <textarea autocomplete="off" class="defines"></textarea>
+                </div>
+            </div>
+            <div class="functiongroup">
+                <h4>doT.template compiles it into</h4>
+                <div class="function">
+                </div>
+            </div>
+            <div style="clear:both"></div>
+            <div class="datagroup">
+                <h4>Data</h4>
+                <textarea autocomplete="off" class="data"></textarea>
+            </div>
+            <div class="resultgroup">
+                <h4>Result</h4>
+                <div class="result">
+            </div>
+            </div>
+        </div>
+
+
+        <script src='http://code.jquery.com/jquery-1.9.1.min.js'></script>
+        <script src='jquery.template.js'></script>
+        <script>
+            (function () {
+                var samples = {
+                    'interpolation': {
+                        template: "<div>Hi {{=it.name}}!</div>\n<div>{{=it.age || ''}}</div>",
+                        data: {
+                            name: "Jake",
+                            age: 31
+                        }
+                    },
+                    'evaluation': {
+                        template: "{{ for(var prop in it) { }}\n<div>{{=prop}}</div>\n{{ } }}",
+                        data: {
+                            name: "Jake",
+                            age: 31,
+                            mother: "Kate",
+                            father: "John",
+                            interests: ['basketball', 'hockey', 'photography'],
+                            contact: {
+                                email: "jake@xyz.com",
+                                phone: "999999999"
+                            }
+                        }
+                    },
+                    'partials': {
+                        template: "{{##def.snippet:\n<div>{{=it.name}}</div>{{#def.joke}}\n#}}\n\n{{#def.snippet}}",
+                        data: {
+                            name: "Jake",
+                            age: 31
+                        },
+                        def: {
+                            joke: "<div>{{=it.name}} who?</div>"
+                        }
+                    },
+                    'conditionals': {
+                        template: "{{? it.name }}\n<div>Oh, I love your name, {{=it.name}}!</div>\n{{?? it.age === 0}}\n<div>Guess nobody named you yet!</div>\n{{??}}\nYou are {{=it.age}} and still don't have a name?\n{{?}}",
+                        data: {
+                            name: "Jake",
+                            age: 31
+                        }
+                    },
+                    'arrays': {
+                        template: "{{~it.array :value:index}}\n<div>{{=value}}!</div>\n{{~}}",
+                        data: {
+                            array: ["banana", "apple", "orange"]
+                        }
+                    },
+                    'encode': {
+                        template: "Visit {{!it.uri}}",
+                        data: {
+                            uri: "http://bebedo.com/?keywords=Yoga"
+                        }
+                    }
+                };
+                var br = $('#samples .result'),
+                    bf = $('#samples .function'),
+                    bdef = $('#samples .defines'),
+                    tg = $('.templategroup'),
+                    bt = $('#samples .template'),
+                    bd = $('#samples .data'),
+                    bs = $('#sampletabs'),
+                    data = {}, def, fn;
+
+                function onTemplate(tmpl) {
+                    var text, error;
+                    try {
+                        var tmpdef = $.extend({}, def);
+                        fn = text = $.template(tmpl, undefined, tmpdef);
+                    } catch (e) {
+                        fn = undefined;
+                        error = text = "Template has an error: " + e;
+                    }
+                    bf.html(text.toString().encodeHTML());
+                    br.html(error ? "Fix the template" : (fn(data) || '').toString().encodeHTML().replace(/\n/g, "<br/>"));
+                }
+                function newSample(s) {
+                    $('ul .active').removeClass("active");
+                    $("#x" + s).addClass("active");
+                    var sample = samples[s];
+                    data = $.extend({}, sample.data);
+                    def = sample.def ? $.extend({}, sample.def) : undefined;
+                    if (def) {
+                        bdef.val(JSON.stringify(def));
+                        tg.addClass("withdefs");
+                    } else {
+                        tg.removeClass("withdefs");
+                        bdef.val("");
+                    }
+                    bt.val(sample.template);
+                    bd.val(JSON.stringify(sample.data));
+                    onTemplate(sample.template);
+                }
+                bt.keyup(function () {
+                    onTemplate(this.value);
+                });
+                bdef.keyup(function () {
+                    var error;
+                    try {
+                        eval("def=(" + this.value + ")");
+                    } catch (e) {
+                        def = undefined;
+                        error = "Defs error: " + e;
+                    }
+                    onTemplate(bt.val());
+                });
+                bd.keyup(function () {
+                    var error;
+                    try {
+                        eval("data=(" + this.value + ")");
+                    } catch (e) {
+                        data = {};
+                        error = "Data error: " + e;
+                    }
+                    br.html(error ? "Fix the template" : (fn(data) || '').toString().encodeHTML().replace(/\n/g, "<br/>"));
+                });
+                $('#strip').change(function () {
+                    $.template.defaults.strip = this.checked;
+                    onTemplate(bt.val());
+                });
+                bs.click(function (event) {
+                    newSample(event.target.id.substring(1));
+                });
+                var tmp = '';
+                for (var s in samples) {
+                    if (samples.hasOwnProperty(s)) {
+                        tmp += "<li id='x" + s + "'>" + s + "</li>";
+                    }
+                }
+                bs.html(tmp);
+                newSample('interpolation');
+            }());
+        </script>
+    </body>
+</html>
