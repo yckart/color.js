@@ -1,9 +1,6 @@
 #No documentation yet!
 (feel free to write a bit about it)
 
-##Thanks
-[Laura Doktorova](https://github.com/olado/) | [doT](http://olado.github.com/doT/)
-
 ## Download
  Get the [raw](https://raw.github.com/yckart/jquery.template.js/master/jquery.template.js) script, download the complete [package](https://github.com/yckart/jquery.template.js/zipball/master) or fork it on [GitHub](https://github.com/yckart/jquery.template.js/).
 
